@@ -1,0 +1,8 @@
+cron:
+- description: get feeds
+  url: /update_feeds
+  schedule: every 1 minutes
+- description: prune feeds
+  url: /prune
+  schedule: every day 23:00
+  timezone: US/Pacific

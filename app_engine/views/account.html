@@ -1,0 +1,10 @@
+{% extends "shared/base.html" %}
+
+{% block title %}BReader - Account{% endblock %}
+
+{% block content %}
+<h4>Account</h4>
+<p>Read Count: <strong>{{ read_count }}</strong></p>
+<p>Unread Count: <strong>{{ unread_count }}</strong></p>
+<p><i><small>Stats since {{ created_at }}</small></i></p>
+{% endblock %}

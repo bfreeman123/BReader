@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}Fill me in{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="breader">
+    <meta name="author" content="Rodney Munch">
+
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 20px;
+        padding-bottom: 40px;
+      }
+
+      /* Custom container */
+      .container-narrow {
+        margin: 0 auto;
+        max-width: 700px;
+      }
+      .container-narrow > hr {
+        margin: 30px 0;
+      }
+      
+      /* drag and drop */
+      #sortable { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+      #sortable li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+      #sortable li span { position: absolute; margin-left: -1.3em; }
+    </style>
+    <link href="/static/bootstrap-responsive.min.css" rel="stylesheet">
+    <link href="/static/smoothness/jquery-ui-1.9.2.custom.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body>
+    <div data-spy="affix" data-offset-top="50"><span class="badge badge-info"><span id="count">{{ unread_count|default('0')}}</span> Unread</span><p><button class="btn" type="button" onClick="javascript:window.location.href='/'">Refresh</button></p></div>
+    <div class="container-narrow">
+
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li class="{{ home_url_class }}"><a href="/">Home</a></li>
+          <li class="{{ starred_url_class }}"><a href="/show_starred">Starred</a></li>
+          <li class="{{ feeds_url_class }}"><a href="/feeds">Feeds</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+              <i class="icon-user"></i> {{ user }}
+              <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a href="/account"><i class="icon-wrench"></i> My Account</a></li>
+              <li><a href="{{ logout }}"><i class="icon-off"></i> Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+        <h3 class="muted">BReader</h3>
+      </div>
+
+      <hr>
+
+      {% block content %}{% endblock %}
+      
+    </div> <!-- /container -->
+    {% block footer %}{% endblock %}
+
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js" type="text/javascript"></script>
+    <script src="/static/bootstrap.min.js"></script>
+    {% block script %}{% endblock %}
+
+  </body>
+</html>
+

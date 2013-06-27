@@ -1,0 +1,113 @@
+{% extends "shared/base.html" %}
+
+{% block title %}BReader - Starred{% endblock %}
+
+{% block content %}
+<style type="text/css">
+.myitem {
+  width:100%;
+  padding:10px;
+  border:1px solid gray;
+  margin:20px;
+}
+.myitemread {
+  width:100%;
+  padding:10px;
+  border:2px solid black;
+  margin:20px;
+}
+.mysub {
+  font-size:smaller;
+}
+p {
+  margin-top:10px;
+}
+h4 {
+  margin-bottom:1px;
+}
+</style>
+<div id="maintable"></div>
+{% endblock %}
+{% block script %}
+<script>
+var bookmark = "";
+var all_stories = [];
+var current_index = -1;
+var more = false;
+
+function appendResults(stories){
+  for (var i=0; i<stories.length; i++){
+    story = stories[i];
+    all_stories.push(story.key.toString());
+    str = '<a name="a_' + story.key.toString() + '"></a><div class="myitem" id="s_' + story.key + '"><div class="pull-right mysub">' + story.pub_date + '</div><h4><span id="star_' + story.key + '"><i class="icon-star"></i></span><a href="' + story.link.toString() + '">' + story.title.toString() + '</a></h4><div class="mysub">From: <a href="' + story.feed_url + '">' + story.feed_name + '</a></div><p>' + story.description + '</p></div>';
+    $('#maintable').append(str);
+  }
+  // force all external links to open in new tab
+  $("a[href^='http']").attr('target','_blank');
+}
+
+$(document).ready(function() {
+  $.ajax({
+    url: "/starred",
+    cache: false,
+    dataType: 'json'
+  }).done(function( json ) {
+    bookmark = json.bookmark;
+    more = json.more;
+    appendResults(json.stories);
+  });
+});
+
+$(document).keypress(function(event) {
+  // J for Next
+  if(event.charCode == 106){
+    // fetch more stories if we only have 10 or less to show
+    if(more == true){
+      if((all_stories.length - current_index) < 10){
+        $.ajax({
+          url: "/starred?bookmark=" + bookmark,
+          cache: false,
+          dataType: 'json'
+        }).done(function( json ) {
+          bookmark = json.bookmark;
+          more = json.more;
+          appendResults(json.stories);
+        });
+      }
+    }
+    if(current_index < (all_stories.length - 1)){
+      current_index += 1;
+      location.href = "#a_" + all_stories[current_index];
+    }
+  // K for Previous
+  } else if(event.charCode == 107){
+    if(current_index > 0){
+      current_index -= 1;
+      location.href = "#a_" + all_stories[current_index];
+    }
+  // S for Star
+  } else if(event.charCode == 115){
+    if(current_index > -1){
+      $.ajax({
+        url: "/mark_star?key=" + all_stories[current_index],
+        cache: false,
+        dataType: 'json'
+      }).done(function( json ) {
+        $('#star_' + all_stories[current_index]).html('<i class="icon-star"></i>');
+      });
+    }
+  // U for UnStar
+  } else if(event.charCode == 117){
+    if(current_index > -1){
+      $.ajax({
+        url: "/unmark_star?key=" + all_stories[current_index],
+        cache: false,
+        dataType: 'json'
+      }).done(function( json ) {
+        $('#star_' + all_stories[current_index]).html('');
+      });
+    }
+  }
+});
+</script>
+{% endblock %}

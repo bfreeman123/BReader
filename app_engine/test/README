@@ -1,0 +1,6 @@
+To run tests, you need to have unittest2 installed:
+http://pypi.python.org/pypi/unittest2
+
+To run the test suite, cd to the app root and run the following:
+
+python test/test_runner.py /path_to_sdk test/
