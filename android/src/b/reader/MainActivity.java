@@ -246,7 +246,7 @@ public class MainActivity extends Activity {
 		if (storyIndex == -1) {
 			return;
 		}
-		final Toast fuckedUp = Toast.makeText(this, "Error marking post read", Toast.LENGTH_LONG);
+		final Toast fuckedUp = Toast.makeText(this, "Error marking post starred", Toast.LENGTH_LONG);
 		final Toast done = Toast.makeText(this, "Starred", Toast.LENGTH_SHORT);
 		final Context c = this;
 		class SendPostReqAsyncTask extends AsyncTask<String, Void, JSONObject>{
