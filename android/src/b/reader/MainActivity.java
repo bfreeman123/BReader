@@ -168,14 +168,6 @@ public class MainActivity extends Activity {
 		final Context c = this;
 		final String f_key = key;
 		class SendPostReqAsyncTask extends AsyncTask<String, Void, JSONObject>{
-			ProgressDialog progressDialog;
-
-			@Override
-			protected void onPreExecute(){
-				progressDialog = ProgressDialog.show(c, "", "Networking shit...", false);
-				super.onPreExecute();
-			}
-
 			@Override
 			protected JSONObject doInBackground(String... p) {
 				Map<String, String> args = new HashMap<String, String>();
@@ -191,7 +183,6 @@ public class MainActivity extends Activity {
 					if (!status.equals("OK")) {
 						fuckedUp.show();
 					}
-					progressDialog.dismiss();
 					super.onPostExecute(result);
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -250,14 +241,6 @@ public class MainActivity extends Activity {
 		final Toast done = Toast.makeText(this, "Starred", Toast.LENGTH_SHORT);
 		final Context c = this;
 		class SendPostReqAsyncTask extends AsyncTask<String, Void, JSONObject>{
-			ProgressDialog progressDialog;
-
-			@Override
-			protected void onPreExecute(){
-				progressDialog = ProgressDialog.show(c, "", "Networking shit...", false);
-				super.onPreExecute();
-			}
-
 			@Override
 			protected JSONObject doInBackground(String... p) {
 				Map<String, String> args = new HashMap<String, String>();
@@ -269,7 +252,6 @@ public class MainActivity extends Activity {
 			@Override
 			protected void onPostExecute(JSONObject result) {
 				try{
-					progressDialog.dismiss();
 					String status = result.getString("status");
 					if (status.equals("OK")) {
 						done.show();
