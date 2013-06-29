@@ -2,14 +2,13 @@ from controllers.base import *
 import logging
 import datetime
 import json
+import config
 from google.appengine.api import memcache
-
-API_KEY = 'fill-me-in'
 
 class NextHandler(BaseRequest):
   def post(self):
     key = self.request.get('api_key')
-    if(key != API_KEY):
+    if(key != config.API_KEY):
       self.error(403)
     
     bookmark = self.request.get('bookmark')
@@ -20,7 +19,7 @@ class NextHandler(BaseRequest):
 class ReadHandler(BaseRequest):
   def post(self):
     key = self.request.get('api_key')
-    if(key != API_KEY):
+    if(key != config.API_KEY):
       self.error(403)
 
     key = self.request.get('key')
@@ -31,7 +30,7 @@ class ReadHandler(BaseRequest):
 class Account(BaseRequest):
   def post(self):
     key = self.request.get('api_key')
-    if(key != API_KEY):
+    if(key != config.API_KEY):
       self.error(403)
 
     u = User.reset_unread()
@@ -40,7 +39,7 @@ class Account(BaseRequest):
 class Starred(BaseRequest):
   def post(self):
     key = self.request.get('api_key')
-    if(key != API_KEY):
+    if(key != config.API_KEY):
       self.error(403)
     
     bookmark = self.request.get('bookmark')
@@ -51,7 +50,7 @@ class Starred(BaseRequest):
 class Mark(BaseRequest):
   def post(self):
     key = self.request.get('api_key')
-    if(key != API_KEY):
+    if(key != config.API_KEY):
       self.error(403)
 
     key = self.request.get('key')
@@ -62,7 +61,7 @@ class Mark(BaseRequest):
 class UnMark(BaseRequest):
   def post(self):
     key = self.request.get('api_key')
-    if(key != API_KEY):
+    if(key != config.API_KEY):
       self.error(403)
 
     key = self.request.get('key')
