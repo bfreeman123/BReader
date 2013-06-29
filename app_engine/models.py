@@ -35,11 +35,27 @@ class Feed(Base):
   url = ndb.StringProperty(required=True)
 
   @staticmethod
+  def parse_charset(input):
+    if input == None:
+      return None
+    
+    for token in input.split(';'):
+      if token.strip().startswith('charset'):
+        return token.strip().split('=')[1]
+    return None
+  
+  @staticmethod
   def fetch_feed(url):
     result = urlfetch.fetch(url)
     if result.status_code == 200:
-      content = result.content.decode("utf-8")
-      content = content.encode('utf-8', 'replace')
+      charset = Feed.parse_charset(result.headers['content-type'])
+      if charset:
+        content = result.content.decode(charset)
+        content = content.encode('utf-8', 'replace')
+      else:
+        # if we can't parse a charset from the headers, we will assume utf-8
+        content = result.content.decode('utf-8')
+        content = content.encode('utf-8', 'replace')
       return content
     else:
       logging.error("Could not fetch " + url)
