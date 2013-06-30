@@ -50,13 +50,16 @@ class Feed(Base):
     if result.status_code == 200:
       charset = Feed.parse_charset(result.headers['content-type'])
       if charset:
-        content = result.content.decode(charset)
-        content = content.encode('utf-8', 'replace')
+        try:
+          content = result.content.decode(charset)
+          content = content.encode('utf-8', 'replace')
+          return content
+        except:
+          logging.error("Could not encode " + url)
+          logging.error(sys.exc_info()[0])
+          return result.content
       else:
-        # if we can't parse a charset from the headers, we will assume utf-8
-        content = result.content.decode('utf-8')
-        content = content.encode('utf-8', 'replace')
-      return content
+        return result.content
     else:
       logging.error("Could not fetch " + url)
 
