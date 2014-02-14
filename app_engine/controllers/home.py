@@ -41,10 +41,34 @@ class FeedsWorker(webapp2.RequestHandler):
       taskqueue.add(url='/feed_worker', params={'key':feed.key.urlsafe()})
 
 class FeedWorker(webapp2.RequestHandler):
+  @ndb.transactional
+  def safe_insert(self, entry, feed, story_date):
+    if not Story.query(ancestor=feed.key).filter(Story.guid == entry.id).get():
+      story = Story(parent=feed.key)
+      story.title = entry.title
+      story.link = entry.link
+      x = entry.description
+      try:
+        if x != entry.content[0].value:
+          x = x + entry.content[0].value
+      except:
+        x = x
+      # get mp3
+      if entry.links:
+        for link in entry.links:
+          if link['href'].endswith('.mp3'):
+            x = x + "<div><a href='" + link['href'] + "'>" + link['href'] + "</a></div>"
+          elif link['href'].endswith('.jpg') or link['href'].endswith('.jpeg') or link['href'].endswith('.bmp') or link['href'].endswith('.png' or link['href'].endswith('.gif')):
+            x = x + "<div><img src='" + link['href'] + "'>" + "</div>"
+      story.description = x
+      story.pub_date = story_date
+      story.guid = entry.id
+      story.put()
+
   def post(self):
-    user = MemcacheValues.user()
+    user = User.query().get()
     key = self.request.get('key')
-    feed = MemcacheValues.feed(key)
+    feed = Feed.retrieve(key)
     try:
       content = Feed.fetch_feed(feed.url)
       d = feedparser.parse(content)
@@ -57,28 +81,7 @@ class FeedWorker(webapp2.RequestHandler):
           except:
             entry.id = entry.link
           if story_date > yesterday:
-            if not Story.query().filter(Story.guid == entry.id).get():
-              db_key = ndb.Key(urlsafe=key)
-              story = Story(feed=db_key)
-              story.title = entry.title
-              story.link = entry.link
-              x = entry.description
-              try:
-                if x != entry.content[0].value:
-                  x = x + entry.content[0].value
-              except:
-                x = x
-              # get mp3
-              if entry.links:
-                for link in entry.links:
-                  if link['href'].endswith('.mp3'):
-                    x = x + "<div><a href='" + link['href'] + "'>" + link['href'] + "</a></div>"
-                  elif link['href'].endswith('.jpg') or link['href'].endswith('.jpeg') or link['href'].endswith('.bmp') or link['href'].endswith('.png' or link['href'].endswith('.gif')):
-                    x = x + "<div><img src='" + link['href'] + "'>" + "</div>"
-              story.description = x
-              story.pub_date = story_date
-              story.guid = entry.id
-              story.put()
+            self.safe_insert(entry, feed, story_date)
         except:
           logging.error("error parsing story" + json.dumps(entry))
     except:
@@ -107,7 +110,7 @@ class NextHandler(BaseRequest):
 class ReadHandler(BaseRequest):
   def get(self):
     key = self.request.get('key')
-    Story.mark_read(key, MemcacheValues.user())
+    Story.mark_read(key, User.query().get())
     
     self.response.write(json.dumps({'status': 'OK', 'key': key}))
 
@@ -136,7 +139,7 @@ class PruneWorker(BaseRequest):
     query = Story.query().filter(Story.read == True).filter(Story.starred == False)
     stories, next_cursor, more = query.fetch_page(1000, start_cursor=None)
 
-    cutoff = datetime.datetime.now() - datetime.timedelta(days=2)
+    cutoff = datetime.datetime.now() - datetime.timedelta(days=10)
     for story in stories:
       if story.created_at < cutoff:
         story.key.delete()
@@ -148,7 +151,7 @@ class Account(BaseRequest):
 
 class StarredPage(BaseRequest):
   def get(self):
-    u = MemcacheValues.user()
+    u = User.query().get()
     self.render('starred.html', {'unread_count':u.unread_count})
 
 class StarredHandler(BaseRequest):

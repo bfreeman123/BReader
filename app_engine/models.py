@@ -21,9 +21,10 @@ class User(Base):
 
   @staticmethod
   def reset_unread():
-    user = MemcacheValues.user()
-    if user == None:
-      return
+    #user = MemcacheValues.user()
+    #if user == None:
+    #  return
+    user = User.query().get()
     uc = Story.query().filter(Story.read == False).count()
     user.unread_count = uc
     user.put()
@@ -106,7 +107,6 @@ class Feed(Base):
     memcache.set('feeds', results)
 
 class Story(Base):
-  feed = ndb.KeyProperty(kind=Feed, required=True)
   guid = ndb.StringProperty(indexed=True)
   title = ndb.StringProperty(indexed=False)
   link = ndb.StringProperty(indexed=False)
@@ -114,6 +114,51 @@ class Story(Base):
   pub_date = ndb.DateTimeProperty(indexed=True)
   read = ndb.BooleanProperty(default=False)
   starred = ndb.BooleanProperty(default=False)
+
+  # taken from http://stackoverflow.com/questions/1551382/user-friendly-time-format-in-python
+  @staticmethod
+  def pretty_date(time=False):
+    """
+    Get a datetime object or a int() Epoch timestamp and return a
+    pretty string like 'an hour ago', 'Yesterday', '3 months ago',
+    'just now', etc
+    """
+    from datetime import datetime
+    now = datetime.now()
+    if type(time) is int:
+      diff = now - datetime.fromtimestamp(time)
+    elif isinstance(time,datetime):
+      diff = now - time 
+    elif not time:
+      diff = now - now
+    second_diff = diff.seconds
+    day_diff = diff.days
+
+    if day_diff < 0:
+      return ''
+
+    if day_diff == 0:
+      if second_diff < 10:
+        return "just now"
+      if second_diff < 60:
+        return str(second_diff) + " seconds ago"
+      if second_diff < 120:
+        return  "a minute ago"
+      if second_diff < 3600:
+        return str( second_diff / 60 ) + " minutes ago"
+      if second_diff < 7200:
+        return "an hour ago"
+      if second_diff < 86400:
+        return str( second_diff / 3600 ) + " hours ago"
+    if day_diff == 1:
+      return "Yesterday"
+    if day_diff < 7:
+      return str(day_diff) + " days ago"
+    if day_diff < 31:
+      return str(day_diff/7) + " weeks ago"
+    if day_diff < 365:
+      return str(day_diff/30) + " months ago"
+    return str(day_diff/365) + " years ago"
 
   @staticmethod
   def next(bookmark=None, starred=False):
@@ -136,7 +181,7 @@ class Story(Base):
 
     s = []
     for story in stories:
-      f = MemcacheValues.feed(story.feed.urlsafe())
+      f = story.key.parent().get()
       # in case feed was deleted but we still have saved stories
       feed_name = None
       feed_url = None
@@ -154,7 +199,7 @@ class Story(Base):
           'title': story.title,
           'link': story.link,
           'description': story.description,
-          'pub_date': datetime.datetime.strftime(story.pub_date, "%Y-%m-%dT%H:%M:%S")
+          'pub_date': Story.pretty_date(story.pub_date)
         }
       )
 
@@ -173,9 +218,9 @@ class Story(Base):
       user.unread_count = 0
       logging.error("forced unread_count to 0")
     user.put()
-    memcache.set('user', user)
-
+  
   @staticmethod
+  @ndb.transactional(xg=True)
   def mark_read(key, user):
     story = Story.retrieve(key)
     story.read = True
@@ -196,16 +241,6 @@ class Story(Base):
 
 class MemcacheValues():
   @staticmethod
-  def user():
-    data = memcache.get('user')
-    if data is not None:
-      return data
-    else:
-      data = User.query().get()
-      memcache.add('user', data)
-      return data
-
-  @staticmethod
   def feeds():
     data = memcache.get('feeds')
     if data is not None:
@@ -214,15 +249,3 @@ class MemcacheValues():
       data = Feed.query().order(Feed.name).fetch(1000)
       memcache.set('feeds', data)
       return data
-
-  @staticmethod
-  def feed(key):
-    data = memcache.get('feed_' + key)
-    if data is not None:
-      return data
-    else:
-      data = Feed.retrieve(key)
-      memcache.add('feed_' + key, data)
-      return data
-
-  
