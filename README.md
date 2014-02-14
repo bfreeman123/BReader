@@ -4,7 +4,7 @@ My name is Brian. This is my Reader. It's modeled after the parts I like in Goog
 
 API_KEY
 -------
-The android project authenticates with the app engine backend via an API Key. This is something you must generate and fill in on both projects. For the android project, this is defined on the Globals.java class on line 42. Whatever value you assign your API_KEY, this same value must be placed in the app engine project. This is defined in controllers/api.py on line 7. If both keys are the same, the android app should be able to authenticate.
+The android project authenticates with the app engine backend via an API Key. This is something you must generate and fill in on both projects. For the android project, this is defined on the Globals.java class on line 42. Whatever value you assign your API_KEY, this same value must be placed in the app engine project. In app engine, copy config.py.sample to config.py and fill in the key value. If both keys are the same, the android app should be able to authenticate.
 
 Android
 -------
@@ -12,7 +12,7 @@ To setup the android project, you must first setup the app engine backend (see b
 
 App Engine
 ----------
-To setup the app engine project, you need to create a new app engine identifier on app engine. Once you have one, plug it into app.yaml line 1. Next, you will want to fill in the API key (see above).
+To setup the app engine project, you need to create a new app engine identifier on app engine. Once you have one, copy app.yaml.sample to app.yaml and fill in your values.
 
 To import your feeds from google reader, you can go the feeds tab and upload the xml file containing the feeds you get from the google reader export.
 
