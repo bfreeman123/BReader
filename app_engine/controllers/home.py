@@ -26,13 +26,19 @@ class FeedPage(BaseRequest):
 class FeedHandler(webapp2.RequestHandler):
   def get(self):
     now = datetime.datetime.now()
-    if now.minute == 30:
+    if now.minute == 30 or now.minute == 0:
       taskqueue.add(url='/feeds_worker', params={})
       self.response.headers['Content-Type'] = 'text/plain'
       self.response.write('Job Added')
     else:
       self.response.headers['Content-Type'] = 'text/plain'
       self.response.write('Sleeping')
+
+class FeedHandler2(webapp2.RequestHandler):
+  def get(self):
+    taskqueue.add(url='/feeds_worker', params={})
+    self.response.headers['Content-Type'] = 'text/plain'
+    self.response.write('Job Added')
 
 class FeedsWorker(webapp2.RequestHandler):
   def post(self):
@@ -185,6 +191,7 @@ class Sync(BaseRequest):
 routes = [('/', MainPage),
           ('/feeds', FeedPage),
           ('/update_feeds', FeedHandler),
+          ('/force_update_feeds', FeedHandler2),
           ('/feeds_worker', FeedsWorker),
           ('/feed_worker', FeedWorker),
           ('/feed_new', NewFeed),
