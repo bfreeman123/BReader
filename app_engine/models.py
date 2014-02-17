@@ -47,6 +47,7 @@ class Feed(Base):
   
   @staticmethod
   def fetch_feed(url):
+    urlfetch.set_default_fetch_deadline(30)
     result = urlfetch.fetch(url)
     if result.status_code == 200:
       charset = Feed.parse_charset(result.headers['content-type'])
