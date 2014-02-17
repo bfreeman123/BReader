@@ -181,7 +181,11 @@ class Story(Base):
 
     s = []
     for story in stories:
-      f = story.key.parent().get()
+      f = None
+      try:
+        f = story.key.parent().get()
+      except:
+        f = None
       # in case feed was deleted but we still have saved stories
       feed_name = None
       feed_url = None
@@ -242,10 +246,10 @@ class Story(Base):
 class MemcacheValues():
   @staticmethod
   def feeds():
-    data = memcache.get('feeds')
-    if data is not None:
-      return data
-    else:
+    #data = memcache.get('feeds')
+    #if data is not None:
+    #  return data
+    #else:
       data = Feed.query().order(Feed.name).fetch(1000)
-      memcache.set('feeds', data)
+    #  memcache.set('feeds', data)
       return data
