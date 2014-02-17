@@ -26,7 +26,7 @@ class FeedPage(BaseRequest):
 class FeedHandler(webapp2.RequestHandler):
   def get(self):
     now = datetime.datetime.now()
-    if now.minute == 30 or now.minute == 0:
+    if now.minute == 30:
       taskqueue.add(url='/feeds_worker', params={})
       self.response.headers['Content-Type'] = 'text/plain'
       self.response.write('Job Added')
@@ -80,7 +80,11 @@ class FeedWorker(webapp2.RequestHandler):
       d = feedparser.parse(content)
       for entry in d.entries:
         try:
-          story_date = datetime.datetime(*(entry.published_parsed[0:6]))
+          story_date = None
+          try:
+            story_date = datetime.datetime(*(entry.published_parsed[0:6]))
+          except:
+            story_date = datetime.datetime.now()
           yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
           try:
             entry.id == None
