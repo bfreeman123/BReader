@@ -6,6 +6,7 @@ import json
 from xml.dom.minidom import parseString
 from google.appengine.api import memcache
 import sys
+import traceback
 
 class MainPage(BaseRequest):
   def get(self):
@@ -94,9 +95,10 @@ class FeedWorker(webapp2.RequestHandler):
             self.safe_insert(entry, feed, story_date)
         except:
           logging.error("error parsing story" + json.dumps(entry))
+          logging.error("".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])))
     except:
       logging.error("error parsing " + feed.url)
-      logging.error(sys.exc_info()[0])
+      logging.error("".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])))
 
 class NewFeed(BaseRequest):
   def post(self):
