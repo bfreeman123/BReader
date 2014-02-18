@@ -4,6 +4,8 @@ from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 import datetime
 import feedparser
+import sys
+import traceback
 
 class Base(ndb.Model):
   created_at = ndb.DateTimeProperty(auto_now_add=True)
@@ -46,24 +48,30 @@ class Feed(Base):
     return None
   
   @staticmethod
-  def fetch_feed(url):
-    urlfetch.set_default_fetch_deadline(30)
-    result = urlfetch.fetch(url)
-    if result.status_code == 200:
-      charset = Feed.parse_charset(result.headers['content-type'])
-      if charset:
-        try:
-          content = result.content.decode(charset)
-          content = content.encode('utf-8', 'replace')
-          return content
-        except:
-          logging.error("Could not encode " + url)
-          logging.error(sys.exc_info()[0])
+  def fetch_feed(url, retries=1):
+    try:
+      urlfetch.set_default_fetch_deadline(30)
+      result = urlfetch.fetch(url)
+      if result.status_code == 200:
+        charset = Feed.parse_charset(result.headers['content-type'])
+        if charset:
+          try:
+            content = result.content.decode(charset)
+            content = content.encode('utf-8', 'replace')
+            return content
+          except:
+            logging.error("Could not encode " + url)
+            logging.error(sys.exc_info()[0])
+            return result.content
+        else:
           return result.content
       else:
-        return result.content
-    else:
-      logging.error("Could not fetch " + url)
+        logging.error("Could not fetch " + url)
+    except:
+      logging.error("Feed.fetch_feed()" + "".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])))
+      if retries > 0:
+        logging.error("retry " + url)
+        return Feed.fetch_feed(url, retries-1)
 
   @staticmethod
   def add(url):
