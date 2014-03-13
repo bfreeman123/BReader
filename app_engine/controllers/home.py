@@ -7,6 +7,7 @@ from xml.dom.minidom import parseString
 from google.appengine.api import memcache
 import sys
 import traceback
+import re
 
 class MainPage(BaseRequest):
   def get(self):
@@ -60,6 +61,13 @@ class FeedWorker(webapp2.RequestHandler):
           x = x + entry.content[0].value
       except:
         x = x
+      
+      # add any links that are missing
+      r = re.compile(r"(?!href) (http://[^ ]+)")
+      x = r.sub(r'<a href="\1">\1</a>', x)
+      r = re.compile(r"(?!href) (https://[^ ]+)")
+      x = r.sub(r'<a href="\1">\1</a>', x)
+      
       # get mp3
       if entry.links:
         for link in entry.links:
