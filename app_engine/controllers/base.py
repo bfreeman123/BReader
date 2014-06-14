@@ -20,24 +20,15 @@ class BaseRequest(webapp2.RequestHandler):
   def render(self, page, values):
     user = users.get_current_user()
     values['user'] = user.nickname()
-    values['logout'] = users.create_logout_url("/")
+    feeds = MemcacheValues.feeds()
+    values['feeds'] = feeds
     url = self.request.url
-    if "/feeds" in url:
-      values['home_url_class'] = ''
-      values['feeds_url_class'] = 'active'
-      values['starred_url_class'] = ''
-    elif "/account" in url:
-      values['home_url_class'] = ''
-      values['feeds_url_class'] = ''
-      values['starred_url_class'] = ''
-    elif "/show_starred" in url:
-      values['home_url_class'] = ''
-      values['feeds_url_class'] = ''
-      values['starred_url_class'] = 'active'
-    else:
-      values['home_url_class'] = 'active'
-      values['feeds_url_class'] = ''
-      values['starred_url_class'] = ''
+    start = url.find('.appspot.com') + 12
+    url = url[start:]
+    values['url'] = url
+    values['logout'] = users.create_logout_url("/")
+    u = User.query().get()
+    values['total_unread_count'] = u.unread_count
     
     template = self.jinja_environment.get_template(page)
     self.response.out.write(template.render(values))

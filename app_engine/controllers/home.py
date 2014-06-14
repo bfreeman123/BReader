@@ -18,12 +18,12 @@ class MainPage(BaseRequest):
     u2 = User.reset_unread()
     if u2 == None:
       u2 = u
-    self.render('index.html', {'unread_count':u2.unread_count})
+    f = self.request.get('f')
+    self.render('index.html', {'unread_count':u2.unread_count, 'f':f})
 
 class FeedPage(BaseRequest):
   def get(self):
-    feeds = MemcacheValues.feeds()
-    self.render('feeds.html', {'feeds':feeds})
+    self.render('feeds.html', {})
 
 class FeedHandler(webapp2.RequestHandler):
   def get(self):
@@ -79,6 +79,8 @@ class FeedWorker(webapp2.RequestHandler):
       story.pub_date = story_date
       story.guid = entry.id
       story.put()
+      feed.unread_count += 1
+      feed.put()
 
   def post(self):
     user = User.query().get()
@@ -122,8 +124,14 @@ class DeleteFeed(BaseRequest):
 
 class NextHandler(BaseRequest):
   def get(self):
+    f = self.request.get('f')
+    feed = None
+    try:
+      feed = Feed.retrieve(f)
+    except:
+      feed = None
     bookmark = self.request.get('bookmark')
-    stories, more, next_bookmark = Story.next(bookmark)
+    stories, more, next_bookmark = Story.next(bookmark, False, feed)
 
     self.response.write(json.dumps({'more': more, 'bookmark': next_bookmark, 'stories': stories}))
 
@@ -197,9 +205,21 @@ class UnMarkStar(BaseRequest):
 
 class Sync(BaseRequest):
   def get(self):
-    User.reset_unread()
+    taskqueue.add(url='/sync_worker', params={})
     self.response.headers['Content-Type'] = 'text/plain'
-    self.response.write('Set unread count')
+    self.response.write('Sync job started')
+
+class SyncWorker(BaseRequest):
+  def post(self):
+    total = 0
+    for feed in Feed.query().iter():
+      c = 0
+      for story in Story.query(ancestor=feed.key).filter(Story.read == False).iter():
+        c +=1
+        total += 1
+      feed.unread_count = c
+      feed.put()
+    User.reset_unread()
       
     
 routes = [('/', MainPage),
@@ -221,6 +241,7 @@ routes = [('/', MainPage),
           ('/starred', StarredHandler),
           ('/mark_star', MarkStar),
           ('/unmark_star', UnMarkStar),
-          ('/sync', Sync)]
+          ('/sync', Sync),
+          ('/sync_worker', SyncWorker)]
 
 app = BaseRequest.app_factory(routes)

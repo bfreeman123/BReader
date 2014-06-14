@@ -11,6 +11,9 @@ class Base(ndb.Model):
   created_at = ndb.DateTimeProperty(auto_now_add=True)
   updated_at = ndb.DateTimeProperty(auto_now=True)
   
+  def guid(self):
+    return self.key.urlsafe()
+
   @staticmethod
   def retrieve(key):
     key = ndb.Key(urlsafe=key)
@@ -36,6 +39,7 @@ class User(Base):
 class Feed(Base):
   name = ndb.StringProperty(required=True)
   url = ndb.StringProperty(required=True)
+  unread_count = ndb.IntegerProperty(required=True, default=0, indexed=False)
 
   @staticmethod
   def parse_charset(input):
@@ -169,13 +173,21 @@ class Story(Base):
       return str(day_diff/30) + " months ago"
     return str(day_diff/365) + " years ago"
 
+  def feed(self):
+    return self.key.parent().get()
+
   @staticmethod
-  def next(bookmark=None, starred=False):
+  def next(bookmark=None, starred=False, feed=None):
     cursor = None
     if bookmark:
       cursor = ndb.Cursor.from_websafe_string(bookmark)
 
-    query = Story.query()
+    query = None
+    if feed:
+      query = Story.query(ancestor=feed.key)
+    else:
+      query = Story.query()
+    
     if starred:
       query = query.filter(Story.starred == True)
     else:
@@ -212,7 +224,8 @@ class Story(Base):
           'title': story.title,
           'link': story.link,
           'description': story.description,
-          'pub_date': Story.pretty_date(story.pub_date)
+          'pub_date': Story.pretty_date(story.pub_date),
+          'feed_guid': story.feed().guid()
         }
       )
 
@@ -239,6 +252,9 @@ class Story(Base):
     story.read = True
     story.put()
     Story.count_up(user)
+    f = story.feed()
+    f.unread_count -= 1;
+    f.put()
 
   @staticmethod
   def mark_starred(key):

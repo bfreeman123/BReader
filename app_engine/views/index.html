@@ -2,45 +2,47 @@
 
 {% block title %}BReader{% endblock %}
 
-{% block content %}
-<style type="text/css">
-.myitem {
-  width:100%;
-  padding:10px;
-  border:1px solid gray;
-  margin:20px;
-}
-.myitemread {
-  width:100%;
-  padding:10px;
-  border:2px solid black;
-  margin:20px;
-}
-.mysub {
-  font-size:smaller;
-}
-p {
-  margin-top:10px;
-}
-h4 {
-  margin-bottom:1px;
-}
-</style>
-<div id="maintable"></div>
-{% endblock %}
 {% block script %}
 <script>
 var bookmark = "";
 var all_stories = [];
+var all_feed_ids = [];
 var current_index = -1;
 var more = false;
+
+var TemplateEngine = function(tpl, data) {
+  var re = /<%([^%>]+)?%>/g;
+  while(match = re.exec(tpl)) {
+    tpl = tpl.replace(match[0], data[match[1]])
+  }
+  return tpl;
+}
 
 function appendResults(stories){
   for (var i=0; i<stories.length; i++){
     story = stories[i];
     all_stories.push(story.key.toString());
-    str = '<a name="a_' + story.key.toString() + '"></a><div class="myitem" id="s_' + story.key + '"><div class="pull-right mysub">' + story.pub_date + '</div><h4><span id="star_' + story.key + '"></span><a href="' + story.link.toString() + '">' + story.title.toString() + '</a></h4><div class="mysub">From: <a href="' + story.feed_url + '">' + story.feed_name + '</a></div><p>' + story.description + '</p></div>';
-    $('#maintable').append(str);
+    all_feed_ids.push(story.feed_guid);
+    template = '\
+      <a name="a_<%guid%>" class="anchor"></a>\
+      <div class="panel panel-default" id="s_<%guid%>">\
+        <div class="panel-heading">\
+          <h3 class="panel-title" style="font-size:20px;margin-bottom:20px;"><a href="<%link%>"><%title%></a></h3>\
+          <span class="pull-left" style="margin-top:-15px;"><a href="<%feed_url%>" style="color:inherit;"><%feed_name%></a></span>\
+          <span class="pull-right" style="margin-top:-15px;"><%date%></span>\
+        </div>\
+        <div class="panel-body" style="overflow:auto;"><%content%></div>\
+      </div>';
+    html = TemplateEngine(template, {
+      guid: story.key,
+      title: story.title,
+      link: story.link,
+      content: story.description,
+      feed_url: story.feed_url,
+      feed_name: story.feed_name,
+      date: story.pub_date,
+    });
+    $('#maintable').append(html);
   }
   // force all external links to open in new tab
   $("a[href^='http']").attr('target','_blank');
@@ -48,7 +50,11 @@ function appendResults(stories){
 
 $(document).ready(function() {
   $.ajax({
+    {% if f %}
+    url: "/next?f={{ f }}",
+    {% else %}
     url: "/next",
+    {% endif %}
     cache: false,
     dataType: 'json'
   }).done(function( json ) {
@@ -65,7 +71,11 @@ $(document).keypress(function(event) {
     if(more == true){
       if((all_stories.length - current_index) < 10){
         $.ajax({
+          {% if f %}
           url: "/next?bookmark=" + bookmark,
+          {% else %}
+          url: "/next?f={{ f }}&bookmark=" + bookmark,
+          {% endif %}
           cache: false,
           dataType: 'json'
         }).done(function( json ) {
@@ -79,7 +89,7 @@ $(document).keypress(function(event) {
       current_index += 1;
       location.href = "#a_" + all_stories[current_index];
       // only do something on nodes we haven't visited yet
-      if($('#s_' + all_stories[current_index]).attr("class") == 'myitemread'){
+      if($('#s_' + all_stories[current_index]).attr("class") == 'panel-primary'){
         // do nothing
       } else {
         $.ajax({
@@ -88,9 +98,12 @@ $(document).keypress(function(event) {
           dataType: 'json'
         }).done(function( json ) {
           if(json.status == 'OK'){
-            $('#s_' + json.key).removeClass('myitem').addClass('myitemread');
-            c = parseInt($('#count').text());
-            $('#count').text(c - 1);
+            //$('#s_' + json.key).removeClass('myitem').addClass('panel-primary');
+            $('#s_' + json.key).addClass('panel-primary');
+            c = parseInt($('#ur').text());
+            $('#ur').text(c - 1);
+            c = parseInt($('#ur_' + all_feed_ids[current_index]).text());
+            $('#ur_' + all_feed_ids[current_index]).text(c - 1);
           }
         });
       }
