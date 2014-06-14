@@ -72,9 +72,9 @@ $(document).keypress(function(event) {
       if((all_stories.length - current_index) < 10){
         $.ajax({
           {% if f %}
-          url: "/next?bookmark=" + bookmark,
-          {% else %}
           url: "/next?f={{ f }}&bookmark=" + bookmark,
+          {% else %}
+          url: "/next?bookmark=" + bookmark,
           {% endif %}
           cache: false,
           dataType: 'json'
@@ -121,7 +121,7 @@ $(document).keypress(function(event) {
         cache: false,
         dataType: 'json'
       }).done(function( json ) {
-        $('#star_' + all_stories[current_index]).html('<i class="icon-star"></i>');
+        $('#s_' + json.key).removeClass('panel-default').removeClass('panel-primary').addClass('panel-warning');
       });
     }
   // U for UnStar
@@ -132,7 +132,7 @@ $(document).keypress(function(event) {
         cache: false,
         dataType: 'json'
       }).done(function( json ) {
-        $('#star_' + all_stories[current_index]).html('');
+        $('#s_' + json.key).removeClass('panel-default').removeClass('panel-warning').addClass('panel-primary');
       });
     }
   }

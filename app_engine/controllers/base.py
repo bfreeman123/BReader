@@ -23,8 +23,6 @@ class BaseRequest(webapp2.RequestHandler):
     feeds = Feed.query().order(-Feed.unread_count2).order(Feed.name).fetch()
     values['feeds'] = feeds
     url = self.request.url
-    start = url.find('.appspot.com') + 12
-    url = url[start:]
     values['url'] = url
     values['logout'] = users.create_logout_url("/")
     u = User.query().get()

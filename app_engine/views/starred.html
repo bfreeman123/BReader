@@ -2,45 +2,47 @@
 
 {% block title %}BReader - Starred{% endblock %}
 
-{% block content %}
-<style type="text/css">
-.myitem {
-  width:100%;
-  padding:10px;
-  border:1px solid gray;
-  margin:20px;
-}
-.myitemread {
-  width:100%;
-  padding:10px;
-  border:2px solid black;
-  margin:20px;
-}
-.mysub {
-  font-size:smaller;
-}
-p {
-  margin-top:10px;
-}
-h4 {
-  margin-bottom:1px;
-}
-</style>
-<div id="maintable"></div>
-{% endblock %}
 {% block script %}
 <script>
 var bookmark = "";
 var all_stories = [];
+var all_feed_ids = [];
 var current_index = -1;
 var more = false;
+
+var TemplateEngine = function(tpl, data) {
+  var re = /<%([^%>]+)?%>/g;
+  while(match = re.exec(tpl)) {
+    tpl = tpl.replace(match[0], data[match[1]])
+  }
+  return tpl;
+}
 
 function appendResults(stories){
   for (var i=0; i<stories.length; i++){
     story = stories[i];
     all_stories.push(story.key.toString());
-    str = '<a name="a_' + story.key.toString() + '"></a><div class="myitem" id="s_' + story.key + '"><div class="pull-right mysub">' + story.pub_date + '</div><h4><span id="star_' + story.key + '"><i class="icon-star"></i></span><a href="' + story.link.toString() + '">' + story.title.toString() + '</a></h4><div class="mysub">From: <a href="' + story.feed_url + '">' + story.feed_name + '</a></div><p>' + story.description + '</p></div>';
-    $('#maintable').append(str);
+    all_feed_ids.push(story.feed_guid);
+    template = '\
+      <a name="a_<%guid%>" class="anchor"></a>\
+      <div class="panel panel-warning" id="s_<%guid%>">\
+        <div class="panel-heading">\
+          <h3 class="panel-title" style="font-size:20px;margin-bottom:20px;"><a href="<%link%>"><%title%></a></h3>\
+          <span class="pull-left" style="margin-top:-15px;"><a href="<%feed_url%>" style="color:inherit;"><%feed_name%></a></span>\
+          <span class="pull-right" style="margin-top:-15px;"><%date%></span>\
+        </div>\
+        <div class="panel-body" style="overflow:auto;"><%content%></div>\
+      </div>';
+    html = TemplateEngine(template, {
+      guid: story.key,
+      title: story.title,
+      link: story.link,
+      content: story.description,
+      feed_url: story.feed_url,
+      feed_name: story.feed_name,
+      date: story.pub_date,
+    });
+    $('#maintable').append(html);
   }
   // force all external links to open in new tab
   $("a[href^='http']").attr('target','_blank');
@@ -93,7 +95,7 @@ $(document).keypress(function(event) {
         cache: false,
         dataType: 'json'
       }).done(function( json ) {
-        $('#star_' + all_stories[current_index]).html('<i class="icon-star"></i>');
+        $('#s_' + json.key).removeClass('panel-default').removeClass('panel-primary').addClass('panel-warning');
       });
     }
   // U for UnStar
@@ -104,7 +106,7 @@ $(document).keypress(function(event) {
         cache: false,
         dataType: 'json'
       }).done(function( json ) {
-        $('#star_' + all_stories[current_index]).html('');
+        $('#s_' + json.key).removeClass('panel-default').removeClass('panel-warning').addClass('panel-primary');
       });
     }
   }
