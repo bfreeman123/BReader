@@ -89,7 +89,7 @@ $(document).keypress(function(event) {
       current_index += 1;
       location.href = "#a_" + all_stories[current_index];
       // only do something on nodes we haven't visited yet
-      if($('#s_' + all_stories[current_index]).attr("class") == 'panel-primary'){
+      if($('#s_' + all_stories[current_index]).hasClass("panel-primary")){
         // do nothing
       } else {
         $.ajax({
@@ -98,8 +98,7 @@ $(document).keypress(function(event) {
           dataType: 'json'
         }).done(function( json ) {
           if(json.status == 'OK'){
-            //$('#s_' + json.key).removeClass('myitem').addClass('panel-primary');
-            $('#s_' + json.key).addClass('panel-primary');
+            $('#s_' + json.key).removeClass('panel-default').addClass('panel-primary');
             c = parseInt($('#ur').text());
             $('#ur').text(c - 1);
             c = parseInt($('#ur_' + all_feed_ids[current_index]).text());
