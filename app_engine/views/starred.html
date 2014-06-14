@@ -56,7 +56,11 @@ $(document).ready(function() {
   }).done(function( json ) {
     bookmark = json.bookmark;
     more = json.more;
-    appendResults(json.stories);
+    if(json.stories.length > 0){
+      appendResults(json.stories);
+    } else {
+      $('#maintable').append('<div class="jumbotron"><h1>Nothing to see here!</h1><p>Move along . . .</p></div>');
+    }
   });
 });
 
