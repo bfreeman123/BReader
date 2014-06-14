@@ -39,7 +39,7 @@ class User(Base):
 class Feed(Base):
   name = ndb.StringProperty(required=True)
   url = ndb.StringProperty(required=True)
-  unread_count = ndb.IntegerProperty(required=True, default=0, indexed=False)
+  unread_count2 = ndb.IntegerProperty(required=True, default=0)
 
   @staticmethod
   def parse_charset(input):
@@ -253,8 +253,9 @@ class Story(Base):
     story.put()
     Story.count_up(user)
     f = story.feed()
-    f.unread_count -= 1;
-    f.put()
+    if f.unread_count2 > 0:
+      f.unread_count2 -= 1;
+      f.put()
 
   @staticmethod
   def mark_starred(key):

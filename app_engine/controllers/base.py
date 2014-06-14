@@ -20,7 +20,7 @@ class BaseRequest(webapp2.RequestHandler):
   def render(self, page, values):
     user = users.get_current_user()
     values['user'] = user.nickname()
-    feeds = MemcacheValues.feeds()
+    feeds = Feed.query().order(-Feed.unread_count2).order(Feed.name).fetch()
     values['feeds'] = feeds
     url = self.request.url
     start = url.find('.appspot.com') + 12

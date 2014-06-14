@@ -79,7 +79,7 @@ class FeedWorker(webapp2.RequestHandler):
       story.pub_date = story_date
       story.guid = entry.id
       story.put()
-      feed.unread_count += 1
+      feed.unread_count2 += 1
       feed.put()
 
   def post(self):
@@ -217,7 +217,7 @@ class SyncWorker(BaseRequest):
       for story in Story.query(ancestor=feed.key).filter(Story.read == False).iter():
         c +=1
         total += 1
-      feed.unread_count = c
+      feed.unread_count2 = c
       feed.put()
     User.reset_unread()
       

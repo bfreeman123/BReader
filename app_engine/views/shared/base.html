@@ -60,7 +60,7 @@
           <ul class="nav nav-sidebar">
             <li {% if f|length == 0 %}class="active"{% endif %}><a href="/">Everything <span class="badge pull-right" id="ur">{{ total_unread_count }}</span></a></li>
             {% for feed in feeds %}
-            <li {% if f == feed.guid() %}class="active"{% endif %}><a href="/?f={{ feed.guid() }}">{{ feed.name }} <span class="badge pull-right" id="ur_{{ feed.guid() }}">{{ feed.unread_count }}</span></a></li>
+            <li {% if f == feed.guid() %}class="active"{% endif %}><a href="/?f={{ feed.guid() }}">{{ feed.name }} <span class="badge pull-right" id="ur_{{ feed.guid() }}">{{ feed.unread_count2 }}</span></a></li>
             {% endfor %}
           </ul>
         </div>
