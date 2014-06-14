@@ -119,6 +119,13 @@ class Feed(Base):
         results.append(feed)
     memcache.set('feeds', results)
 
+  def truncated_name(self):
+    MAX = 15
+    if len(self.name) > MAX:
+      return self.name[0:(MAX-3)] + "..."
+    else:
+      return self.name
+
 class Story(Base):
   guid = ndb.StringProperty(indexed=True)
   title = ndb.StringProperty(indexed=False)

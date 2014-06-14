@@ -21,6 +21,11 @@
       <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+    <script>
+      $(document).ready(function() {
+        $('[rel=tooltip]').tooltip();
+      });
+    </script>
     {% block script %}{% endblock %}
   </head>
 
@@ -60,7 +65,11 @@
           <ul class="nav nav-sidebar">
             <li {% if f|length == 0 %}class="active"{% endif %}><a href="/">Everything <span class="badge pull-right" id="ur">{{ total_unread_count }}</span></a></li>
             {% for feed in feeds %}
+            {% if feed.name == feed.truncated_name() %}
             <li {% if f == feed.guid() %}class="active"{% endif %}><a href="/?f={{ feed.guid() }}">{{ feed.name }} <span class="badge pull-right" id="ur_{{ feed.guid() }}">{{ feed.unread_count2 }}</span></a></li>
+            {% else %}
+            <li {% if f == feed.guid() %}class="active"{% endif %}><a href="/?f={{ feed.guid() }}" rel="tooltip" data-original-title="{{ feed.name }}">{{ feed.truncated_name() }} <span class="badge pull-right" id="ur_{{ feed.guid() }}">{{ feed.unread_count2 }}</span></a></li>
+            {% endif %}
             {% endfor %}
           </ul>
         </div>
