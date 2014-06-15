@@ -59,7 +59,7 @@ $(document).ready(function() {
     if(json.stories.length > 0){
       appendResults(json.stories);
     } else {
-      $('#maintable').append('<div class="jumbotron"><h1>Nothing to see here!</h1><p>Move along . . .</p></div>');
+      $('#maintable').append('<div class="jumbotron"><div class="media"><img class="media-object pull-left" src="/static/wiggum.gif"><div class="media-body"><h1>Nothing to see here!</h1><p>Move along . . .</p></div></div></div>');
     }
   });
 });
