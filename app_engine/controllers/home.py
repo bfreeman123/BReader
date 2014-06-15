@@ -19,7 +19,7 @@ class MainPage(BaseRequest):
     if u2 == None:
       u2 = u
     f = self.request.get('f')
-    self.render('index.html', {'unread_count':u2.unread_count, 'f':f})
+    self.render('index.html', {'unread_count':u2.unread_count, 'f':f, 'h':True})
 
 class FeedPage(BaseRequest):
   def get(self):

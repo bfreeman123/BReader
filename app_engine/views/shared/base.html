@@ -44,7 +44,7 @@
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="/">Home</a></li>
+            <li {% if h %}class="active"{% endif %}><a href="/">Home</a></li>
             <li {% if "/show_starred" in url %}class="active"{% endif %}><a href="/show_starred">Starred</a></li>
             <li {% if "/feed" in url %}class="active"{% endif %}><a href="/feeds">Feeds</a></li>
             <li class="dropdown {% if "/account" in url %}active{% endif %}">
