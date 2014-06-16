@@ -84,23 +84,16 @@ $(document).keypress(function(event) {
     if(current_index < (all_stories.length - 1)){
       current_index += 1;
       location.href = "#a_" + all_stories[current_index];
+      $('.panel-info').removeClass('panel-info').removeClass('panel-warning').addClass('panel-warning')
+      $('#s_' + all_stories[current_index]).removeClass('panel-warning').addClass('panel-info');
     }
   // K for Previous
   } else if(event.charCode == 107){
     if(current_index > 0){
       current_index -= 1;
       location.href = "#a_" + all_stories[current_index];
-    }
-  // S for Star
-  } else if(event.charCode == 115){
-    if(current_index > -1){
-      $.ajax({
-        url: "/mark_star?key=" + all_stories[current_index],
-        cache: false,
-        dataType: 'json'
-      }).done(function( json ) {
-        $('#s_' + json.key).removeClass('panel-default').removeClass('panel-primary').addClass('panel-warning');
-      });
+      $('.panel-info').removeClass('panel-info').removeClass('panel-warning').addClass('panel-warning')
+      $('#s_' + all_stories[current_index]).removeClass('panel-warning').addClass('panel-info');
     }
   // U for UnStar
   } else if(event.charCode == 117){
@@ -110,7 +103,9 @@ $(document).keypress(function(event) {
         cache: false,
         dataType: 'json'
       }).done(function( json ) {
-        $('#s_' + json.key).removeClass('panel-default').removeClass('panel-warning').addClass('panel-primary');
+        $('#s_' + json.key).fadeOut( "slow", function() {
+          $('#s_' + json.key).hide();
+        });
       });
     }
   }
