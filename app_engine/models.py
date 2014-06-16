@@ -184,7 +184,7 @@ class Story(Base):
     return self.key.parent().get()
 
   @staticmethod
-  def next(bookmark=None, starred=False, feed=None):
+  def next(bookmark=None, starred=False, feed=None, archived=False):
     cursor = None
     if bookmark:
       cursor = ndb.Cursor.from_websafe_string(bookmark)
@@ -197,9 +197,16 @@ class Story(Base):
     
     if starred:
       query = query.filter(Story.starred == True)
+    elif archived:
+      query = query.filter(Story.read == True)
     else:
       query = query.filter(Story.read == False)
-    query = query.order(Story.pub_date)
+    
+    if archived:
+      query = query.order(-Story.pub_date)
+    else:
+      query = query.order(Story.pub_date)
+
     PAGE_SIZE = 10
     stories, next_cursor, more = query.fetch_page(PAGE_SIZE, start_cursor=cursor)
 
@@ -223,6 +230,11 @@ class Story(Base):
       else:
         feed_name = f.name
         feed_url = f.url
+      fg = None
+      try:
+        fg = story.feed().guid()
+      except:
+        fg = None
       s.append(
         {
           'key': story.key.urlsafe(),
@@ -232,7 +244,7 @@ class Story(Base):
           'link': story.link,
           'description': story.description,
           'pub_date': Story.pretty_date(story.pub_date),
-          'feed_guid': story.feed().guid()
+          'feed_guid': fg
         }
       )
 

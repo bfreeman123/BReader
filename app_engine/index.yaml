@@ -23,6 +23,12 @@ indexes:
 
 - kind: Story
   properties:
+  - name: read
+  - name: pub_date
+    direction: desc
+
+- kind: Story
+  properties:
   - name: starred
   - name: pub_date
 
@@ -31,3 +37,10 @@ indexes:
   properties:
   - name: read
   - name: pub_date
+
+- kind: Story
+  ancestor: yes
+  properties:
+  - name: read
+  - name: pub_date
+    direction: desc

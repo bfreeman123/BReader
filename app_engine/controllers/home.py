@@ -220,6 +220,25 @@ class SyncWorker(BaseRequest):
       feed.unread_count2 = c
       feed.put()
     User.reset_unread()
+
+class ArchivedPage(BaseRequest):
+  def get(self):
+    u = User.query().get()
+    f = self.request.get('f')
+    self.render('archived.html', {'unread_count':u.unread_count, 'f':f})
+
+class ArchivedHandler(BaseRequest):
+  def get(self):
+    f = self.request.get('f')
+    feed = None
+    try:
+      feed = Feed.retrieve(f)
+    except:
+      feed = None
+    bookmark = self.request.get('bookmark')
+    stories, more, next_bookmark = Story.next(bookmark, False, feed, True)
+
+    self.response.write(json.dumps({'more': more, 'bookmark': next_bookmark, 'stories': stories}))
       
     
 routes = [('/', MainPage),
@@ -242,6 +261,8 @@ routes = [('/', MainPage),
           ('/mark_star', MarkStar),
           ('/unmark_star', UnMarkStar),
           ('/sync', Sync),
-          ('/sync_worker', SyncWorker)]
+          ('/sync_worker', SyncWorker),
+          ('/show_archived', ArchivedPage),
+          ('/archived', ArchivedHandler)]
 
 app = BaseRequest.app_factory(routes)

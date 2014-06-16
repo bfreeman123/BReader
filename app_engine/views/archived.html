@@ -1,0 +1,109 @@
+{% extends "shared/base.html" %}
+
+{% block title %}BReader - Archived{% endblock %}
+
+{% block script %}
+<script>
+var bookmark = "";
+var all_stories = [];
+var all_feed_ids = [];
+var current_index = -1;
+var more = false;
+
+var TemplateEngine = function(tpl, data) {
+  var re = /<%([^%>]+)?%>/g;
+  while(match = re.exec(tpl)) {
+    tpl = tpl.replace(match[0], data[match[1]])
+  }
+  return tpl;
+}
+
+function appendResults(stories){
+  for (var i=0; i<stories.length; i++){
+    story = stories[i];
+    all_stories.push(story.key.toString());
+    all_feed_ids.push(story.feed_guid);
+    template = '\
+      <a name="a_<%guid%>" class="anchor"></a>\
+      <div class="panel panel-default" id="s_<%guid%>">\
+        <div class="panel-heading">\
+          <h3 class="panel-title" style="font-size:20px;margin-bottom:20px;"><a href="<%link%>"><%title%></a></h3>\
+          <span class="pull-left" style="margin-top:-15px;"><a href="<%feed_url%>" style="color:inherit;"><%feed_name%></a></span>\
+          <span class="pull-right" style="margin-top:-15px;"><%date%></span>\
+        </div>\
+        <div class="panel-body" style="overflow:auto;"><%content%></div>\
+      </div>';
+    html = TemplateEngine(template, {
+      guid: story.key,
+      title: story.title,
+      link: story.link,
+      content: story.description,
+      feed_url: story.feed_url,
+      feed_name: story.feed_name,
+      date: story.pub_date,
+    });
+    $('#maintable').append(html);
+  }
+  // force all external links to open in new tab
+  $("a[href^='http']").attr('target','_blank');
+}
+
+$(document).ready(function() {
+  $.ajax({
+    {% if f %}
+    url: "/archived?f={{ f }}",
+    {% else %}
+    url: "/archived",
+    {% endif %}
+    cache: false,
+    dataType: 'json'
+  }).done(function( json ) {
+    bookmark = json.bookmark;
+    more = json.more;
+    if(json.stories.length > 0){
+      appendResults(json.stories);
+    } else {
+      $('#maintable').append('<div class="jumbotron"><div class="media"><img class="media-object pull-left" src="/static/wiggum.gif"><div class="media-body"><h1>Nothing to see here!</h1><p>Move along . . .</p></div></div></div>');
+    }
+  });
+});
+
+$(document).keypress(function(event) {
+  // J for Next
+  if(event.charCode == 106){
+    // fetch more stories if we only have 10 or less to show
+    if(more == true){
+      if((all_stories.length - current_index) < 10){
+        $.ajax({
+          {% if f %}
+          url: "/archived?f={{ f }}&bookmark=" + bookmark,
+          {% else %}
+          url: "/archived?bookmark=" + bookmark,
+          {% endif %}
+          cache: false,
+          dataType: 'json'
+        }).done(function( json ) {
+          bookmark = json.bookmark;
+          more = json.more;
+          appendResults(json.stories);
+        });
+      }
+    }
+    if(current_index < (all_stories.length - 1)){
+      current_index += 1;
+      location.href = "#a_" + all_stories[current_index];
+      $('.panel-info').removeClass('panel-info').removeClass('panel-default').addClass('panel-default')
+      $('#s_' + all_stories[current_index]).removeClass('panel-default').addClass('panel-info');
+    }
+  // K for Previous
+  } else if(event.charCode == 107){
+    if(current_index > 0){
+      current_index -= 1;
+      location.href = "#a_" + all_stories[current_index];
+      $('.panel-info').removeClass('panel-info').removeClass('panel-default').addClass('panel-default')
+      $('#s_' + all_stories[current_index]).removeClass('panel-default').addClass('panel-info');
+    }
+  }
+});
+</script>
+{% endblock %}

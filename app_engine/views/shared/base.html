@@ -46,6 +46,7 @@
           <ul class="nav navbar-nav navbar-right">
             <li {% if h %}class="active"{% endif %}><a href="/">Home</a></li>
             <li {% if "/show_starred" in url %}class="active"{% endif %}><a href="/show_starred">Starred</a></li>
+            <li {% if "/show_archived" in url %}class="active"{% endif %}><a href="/show_archived">Archived</a></li>
             <li {% if "/feed" in url %}class="active"{% endif %}><a href="/feeds">Feeds</a></li>
             <li class="dropdown {% if "/account" in url %}active{% endif %}">
               <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-user"></span> {{ user }} <b class="caret"></b></a>
@@ -63,14 +64,25 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <li {% if f|length == 0 %}class="active"{% endif %}><a href="/">Everything <span class="badge pull-right" id="ur">{{ total_unread_count }}</span></a></li>
-            {% for feed in feeds %}
-            {% if feed.name == feed.truncated_name() %}
-            <li {% if f == feed.guid() %}class="active"{% endif %}><a href="/?f={{ feed.guid() }}">{{ feed.name }} <span class="badge pull-right" id="ur_{{ feed.guid() }}">{{ feed.unread_count2 }}</span></a></li>
+            {% if "/show_archived" in url %}
+              <li {% if f|length == 0 %}class="active"{% endif %}><a href="/show_archived">Everything</a></li>
+              {% for feed in feeds %}
+              {% if feed.name == feed.truncated_name() %}
+              <li {% if f == feed.guid() %}class="active"{% endif %}><a href="/show_archived?f={{ feed.guid() }}">{{ feed.name }}</a></li>
+              {% else %}
+              <li {% if f == feed.guid() %}class="active"{% endif %}><a href="/show_archived?f={{ feed.guid() }}" rel="tooltip" data-original-title="{{ feed.name }}">{{ feed.truncated_name() }}</a></li>
+              {% endif %}
+              {% endfor %}
             {% else %}
-            <li {% if f == feed.guid() %}class="active"{% endif %}><a href="/?f={{ feed.guid() }}" rel="tooltip" data-original-title="{{ feed.name }}">{{ feed.truncated_name() }} <span class="badge pull-right" id="ur_{{ feed.guid() }}">{{ feed.unread_count2 }}</span></a></li>
+              <li {% if f|length == 0 %}class="active"{% endif %}><a href="/">Everything <span class="badge pull-right" id="ur">{{ total_unread_count }}</span></a></li>
+              {% for feed in feeds %}
+              {% if feed.name == feed.truncated_name() %}
+              <li {% if f == feed.guid() %}class="active"{% endif %}><a href="/?f={{ feed.guid() }}">{{ feed.name }} <span class="badge pull-right" id="ur_{{ feed.guid() }}">{{ feed.unread_count2 }}</span></a></li>
+              {% else %}
+              <li {% if f == feed.guid() %}class="active"{% endif %}><a href="/?f={{ feed.guid() }}" rel="tooltip" data-original-title="{{ feed.name }}">{{ feed.truncated_name() }} <span class="badge pull-right" id="ur_{{ feed.guid() }}">{{ feed.unread_count2 }}</span></a></li>
+              {% endif %}
+              {% endfor %}
             {% endif %}
-            {% endfor %}
           </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="maintable">
