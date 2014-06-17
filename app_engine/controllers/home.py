@@ -226,7 +226,7 @@ class SyncWorker(BaseRequest):
     
     # index all stories
     index = search.Index(name='story_index')
-    for story in Story.query().iter():
+    for story in Story.query().order(-Story.created_at).iter():
       g = story.key.urlsafe()
       doc = index.get(g)
       if doc is None:
