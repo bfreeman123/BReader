@@ -43,6 +43,16 @@
           <a class="navbar-brand" href="/">BReader <small>v2</small></a>
         </div>
         <div class="navbar-collapse collapse">
+          <form class="form" role="search" method="GET" action="/search" style="position: relative;top:8px;left:50px;">
+            <div class="col-lg-4">
+              <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search" name="q">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
+                </span>
+              </div>
+            </div>
+          </form>
           <ul class="nav navbar-nav navbar-right">
             <li {% if h %}class="active"{% endif %}><a href="/">Home</a></li>
             <li {% if "/show_starred" in url %}class="active"{% endif %}><a href="/show_starred">Starred</a></li>

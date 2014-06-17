@@ -1,0 +1,17 @@
+{% extends "shared/base.html" %}
+
+{% block title %}BReader - Search Results{% endblock %}
+
+{% block main %}
+<h2>Search Results for {{ q }}</h2>
+{% for result in results %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title" style="font-size:20px;margin-bottom:20px;"><a href="{{ result.link }}">{{ result.title }}</a></h3>
+    <span class="pull-left" style="margin-top:-15px;"><a href="{{ result.feed_url }}" style="color:inherit;">{{ result.feed_name }}</a></span>
+    <span class="pull-right" style="margin-top:-15px;">{{ result.pub_date }}</span>
+  </div>
+  <div class="panel-body" style="overflow:auto;">{{ result.description }}</div>
+</div>
+{% endfor %}
+{% endblock %}

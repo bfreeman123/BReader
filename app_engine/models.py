@@ -2,6 +2,7 @@ from google.appengine.ext import ndb
 import logging
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
+from google.appengine.api import search
 import datetime
 import feedparser
 import sys
@@ -287,6 +288,78 @@ class Story(Base):
     story = Story.retrieve(key)
     story.starred = False
     story.put()
+
+  def index_me(self):
+    st = self.title + ' ' + self.description
+    document = search.Document(
+    doc_id = self.key.urlsafe(),
+    fields=[
+      search.TextField(name='content', value=st)
+    ])
+
+    try:
+      index = search.Index(name='story_index')
+      index.put(document)
+      return True
+    except search.Error:
+      logging.exception('Error adding %s to index', name)
+      return False
+
+  @classmethod
+  def search(cls, query):
+    index = search.Index(name='story_index')
+    query_string = 'content: ~' + query.strip()
+    search_query = search.Query(
+      query_string=query_string
+    )
+    try:
+      results = []
+      for result in index.search(search_query):
+        key = ndb.Key(urlsafe=result.doc_id)
+        story = key.get()
+        f = None
+        try:
+          f = story.key.parent().get()
+        except:
+          f = None
+        # in case feed was deleted but we still have saved stories
+        feed_name = None
+        feed_url = None
+        if f == None:
+          feed_name = "Deleted"
+          feed_url = "#"
+        else:
+          feed_name = f.name
+          feed_url = f.url
+        fg = None
+        try:
+          fg = story.feed().guid()
+        except:
+          fg = None
+        results.append(
+          {
+            'key': story.key.urlsafe(),
+            'feed_name': feed_name,
+            'feed_url': feed_url,
+            'title': story.title,
+            'link': story.link,
+            'description': story.description,
+            'pub_date': Story.pretty_date(story.pub_date),
+            'feed_guid': fg
+          }
+        )
+        return results
+    except search.Error:
+      logging.exception('Search failed')
+      return []
+
+  def delete(self):
+    try:
+      index = search.Index(name='story_index')
+      index.delete(self.key.urlsafe())
+    except:
+      logging.exception('Failed to remove from index')
+    self.key.delete()
 
 class MemcacheValues():
   @staticmethod

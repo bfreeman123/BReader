@@ -5,6 +5,7 @@ import datetime
 import json
 from xml.dom.minidom import parseString
 from google.appengine.api import memcache
+from google.appengine.api import search
 import sys
 import traceback
 import re
@@ -79,6 +80,7 @@ class FeedWorker(webapp2.RequestHandler):
       story.pub_date = story_date
       story.guid = entry.id
       story.put()
+      story.index_me()
       feed.unread_count2 += 1
       feed.put()
 
@@ -104,7 +106,7 @@ class FeedWorker(webapp2.RequestHandler):
           if story_date > yesterday:
             self.safe_insert(entry, feed, story_date)
         except:
-          logging.error("error parsing story" + json.dumps(entry))
+          logging.error("error parsing story" + dir(entry))
           logging.error("".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])))
     except:
       logging.error("error parsing " + feed.url)
@@ -170,7 +172,7 @@ class PruneWorker(BaseRequest):
     cutoff = datetime.datetime.now() - datetime.timedelta(days=10)
     for story in stories:
       if story.created_at < cutoff:
-        story.key.delete()
+        story.delete()
 
 class Account(BaseRequest):
   def get(self):
@@ -219,7 +221,16 @@ class SyncWorker(BaseRequest):
         total += 1
       feed.unread_count2 = c
       feed.put()
+    
     User.reset_unread()
+    
+    # index all stories
+    index = search.Index(name='story_index')
+    for story in Story.query().iter():
+      g = story.key.urlsafe()
+      doc = index.get(g)
+      if doc is None:
+        story.index_me()
 
 class ArchivedPage(BaseRequest):
   def get(self):
@@ -239,6 +250,17 @@ class ArchivedHandler(BaseRequest):
     stories, more, next_bookmark = Story.next(bookmark, False, feed, True)
 
     self.response.write(json.dumps({'more': more, 'bookmark': next_bookmark, 'stories': stories}))
+
+class SearchPage(BaseRequest):
+  def get(self):
+    u = User.query().get()
+    q = self.request.get('q')
+    results = []
+    try:
+      results = Story.search(q)
+    except:
+      results = []
+    self.render('search.html', {'unread_count':u.unread_count, 'results':results, 'q':q})
       
     
 routes = [('/', MainPage),
@@ -263,6 +285,7 @@ routes = [('/', MainPage),
           ('/sync', Sync),
           ('/sync_worker', SyncWorker),
           ('/show_archived', ArchivedPage),
-          ('/archived', ArchivedHandler)]
+          ('/archived', ArchivedHandler),
+          ('/search', SearchPage)]
 
 app = BaseRequest.app_factory(routes)
