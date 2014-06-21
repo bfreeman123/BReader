@@ -348,7 +348,7 @@ class Story(Base):
             'feed_guid': fg
           }
         )
-        return results
+      return results
     except search.Error:
       logging.exception('Search failed')
       return []
