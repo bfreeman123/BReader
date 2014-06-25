@@ -76,3 +76,15 @@ body {
 }
 
 a.anchor{display: block; position: relative; top: -60px; visibility: hidden;}
+
+@media (min-width:992px) {
+  .mobile-only {
+    display:none !important;
+  }
+}
+@media (max-width: 991px) {
+  .mobile-only {
+    display:block !important;
+    /*display:none !important;*/
+  }
+}
