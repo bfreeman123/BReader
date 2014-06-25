@@ -101,7 +101,7 @@ function doNext(mobile){
   if(current_index < (all_stories.length - 1)){
     current_index += 1;
     if(mobile == true){
-      $('html, body').animate({scrollTop: $('#a_' + all_stories[current_index]).offset().top - 30}, 10);
+      $('html, body').animate({scrollTop: $('#a_' + all_stories[current_index]).offset().top}, 10);
     } else {
       document.location.replace("#a_" + all_stories[current_index]);
     }
@@ -115,7 +115,7 @@ function doPrevious(mobile){
   if(current_index > 0){
     current_index -= 1;
     if(mobile == true){
-      $('html, body').animate({scrollTop: $('#a_' + all_stories[current_index]).offset().top - 30}, 10);
+      $('html, body').animate({scrollTop: $('#a_' + all_stories[current_index]).offset().top}, 10);
     } else {
       document.location.replace("#a_" + all_stories[current_index]);
     }
@@ -137,9 +137,9 @@ $(document).keypress(function(event) {
 {% endblock %}
 {% block main %}
 <div class="mobile-only">
-  <ul id="p" class="pager" style="position:fixed;top:35px;">
-    <li class="previous" id="previous"><a href="#">&larr; K</a></li>
-    <li class="next" id="next"><a href="#">J &rarr;</a></li>
+  <ul id="p" class="pager pager-buttons">
+    <li class="previous" id="previous"><a href="#" class="bigger-button">&larr; K</a></li>
+    <li class="next" id="next"><a href="#" class="bigger-button">J &rarr;</a></li>
   </ul>
 </div>
 {% endblock %}
