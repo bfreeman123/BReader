@@ -5,22 +5,7 @@
 {% block script %}
 <script>
 var bookmark = "";
-var all_stories = [];
-var all_feed_ids = [];
-var current_index = -1;
 var more = false;
-
-function appendResults(stories){
-  for (var i=0; i<stories.length; i++){
-    story = stories[i];
-    all_stories.push(story.key.toString());
-    all_feed_ids.push(story.feed_guid);
-    html = BReader.render(story);
-    $('#maintable').append(html);
-  }
-  // force all external links to open in new tab
-  $("a[href^='http']").attr('target','_blank');
-}
 
 $(document).ready(function() {
   $.ajax({
@@ -35,9 +20,9 @@ $(document).ready(function() {
     bookmark = json.bookmark;
     more = json.more;
     if(json.stories.length > 0){
-      appendResults(json.stories);
+      BReader.appendResults(json.stories);
     } else {
-      $('#maintable').append('<div class="jumbotron"><div class="media"><img class="media-object pull-left" src="/static/wiggum.gif"><div class="media-body"><h1>Nothing to see here!</h1><p>Move along . . .</p></div></div></div>');
+      $('#maintable').append(BReader.nothingAvailable);
     }
   });
 
@@ -60,7 +45,7 @@ function doNext(mobile){
   if(typeof(mobile)==='undefined') mobile = false;
   // fetch more stories if we only have 10 or less to show
   if(more == true){
-    if((all_stories.length - current_index) < 10){
+    if(BReader.shouldFetchMoreStories()){
       $.ajax({
         {% if f %}
         url: "/next?f={{ f }}&bookmark=" + bookmark,
@@ -72,23 +57,18 @@ function doNext(mobile){
       }).done(function( json ) {
         bookmark = json.bookmark;
         more = json.more;
-        appendResults(json.stories);
+        BReader.appendResults(json.stories);
       });
     }
   }
-  if(current_index < (all_stories.length - 1)){
-    current_index += 1;
-    if(mobile == true){
-      $('html, body').animate({scrollTop: $('#a_' + all_stories[current_index]).offset().top}, 10);
-    } else {
-      document.location.replace("#a_" + all_stories[current_index]);
-    }
+  if(BReader.moveForward()){
+    BReader.jumpToStory('#a_' + BReader.currentStoryID(), mobile);
     // only do something on nodes we haven't visited yet
-    if($('#s_' + all_stories[current_index]).hasClass("panel-primary")){
+    if($('#s_' + BReader.currentStoryID()).hasClass("panel-primary")){
       // do nothing
     } else {
       $.ajax({
-        url: "/read?key=" + all_stories[current_index],
+        url: "/read?key=" + BReader.currentStoryID(),
         cache: false,
         dataType: 'json'
       }).done(function( json ) {
@@ -96,8 +76,8 @@ function doNext(mobile){
           $('#s_' + json.key).removeClass('panel-default').addClass('panel-primary');
           c = parseInt($('#ur').text());
           $('#ur').text(c - 1);
-          c = parseInt($('#ur_' + all_feed_ids[current_index]).text());
-          $('#ur_' + all_feed_ids[current_index]).text(c - 1);
+          c = parseInt($('#ur_' + BReader.currentFeedID()).text());
+          $('#ur_' + BReader.currentFeedID()).text(c - 1);
         }
       });
     }
@@ -106,20 +86,15 @@ function doNext(mobile){
 
 function doPrevious(mobile){
   if(typeof(mobile)==='undefined') mobile = false;
-  if(current_index > 0){
-    current_index -= 1;
-    if(mobile == true){
-      $('html, body').animate({scrollTop: $('#a_' + all_stories[current_index]).offset().top}, 10);
-    } else {
-      document.location.replace("#a_" + all_stories[current_index]);
-    }
+  if(BReader.moveBackward()){
+    BReader.jumpToStory('#a_' + BReader.currentStoryID(), mobile);
   }
 }
 
 function doStar(){
-  if(current_index > -1){
+  if(BReader.current_index > -1){
     $.ajax({
-      url: "/mark_star?key=" + all_stories[current_index],
+      url: "/mark_star?key=" + BReader.currentStoryID(),
       cache: false,
       dataType: 'json'
     }).done(function( json ) {
@@ -129,9 +104,9 @@ function doStar(){
 }
 
 function doUnstar(){
-  if(current_index > -1){
+  if(BReader.current_index > -1){
     $.ajax({
-      url: "/unmark_star?key=" + all_stories[current_index],
+      url: "/unmark_star?key=" + BReader.currentStoryID(),
       cache: false,
       dataType: 'json'
     }).done(function( json ) {
