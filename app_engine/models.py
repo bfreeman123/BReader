@@ -182,7 +182,10 @@ class Story(Base):
     return str(day_diff/365) + " years ago"
 
   def feed(self):
-    return self.key.parent().get()
+    try:
+      return self.key.parent().get()
+    except:
+      return None
 
   @staticmethod
   def next(bookmark=None, starred=False, feed=None, archived=False):
@@ -273,14 +276,11 @@ class Story(Base):
     story.put()
     Story.count_up(user)
     
-    try:
-      f = story.feed()
+    f = story.feed()
+    if f:
       if f.unread_count2 > 0:
         f.unread_count2 -= 1;
         f.put()
-    except:
-      # feed was probably deleted
-      pass
 
   @staticmethod
   def mark_starred(key):
