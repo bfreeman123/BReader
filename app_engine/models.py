@@ -272,10 +272,15 @@ class Story(Base):
     story.read = True
     story.put()
     Story.count_up(user)
-    f = story.feed()
-    if f.unread_count2 > 0:
-      f.unread_count2 -= 1;
-      f.put()
+    
+    try:
+      f = story.feed()
+      if f.unread_count2 > 0:
+        f.unread_count2 -= 1;
+        f.put()
+    except:
+      # feed was probably deleted
+      pass
 
   @staticmethod
   def mark_starred(key):
