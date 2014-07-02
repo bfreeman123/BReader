@@ -98,4 +98,4 @@ BReader.appendResults = function(stories){
   $("a[href^='http']").attr('target','_blank');
 }
 
-BReader.nothingAvailable = '<div class="jumbotron"><div class="media"><img class="media-object pull-left" src="/static/wiggum.gif"><div class="media-body"><h1>Nothing to see here!</h1><p>Move along . . .</p></div></div></div>';
+BReader.nothingAvailable = '<div class="jumbotron"><div class="media"><img class="img-responsive col-xs-3 media-object pull-left" src="/static/wiggum.gif"><div class="media-body"><h1>Nothing to see here!</h1><p>Move along . . .</p></div></div></div>';
