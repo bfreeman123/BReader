@@ -57,8 +57,24 @@ BReader.shouldFetchMoreStories = function(){
 
 BReader.templateEngine = function(tpl, data) {
   var re = /<%([^%>]+)?%>/g;
+  var loopCount = 0;
   while(match = re.exec(tpl)) {
     tpl = tpl.replace(match[0], data[match[1]])
+    
+    // not sure why templateEngine sometimes gets into infinite loops
+    // sometimes it will replace:
+    //
+    // abc<%foo%>xyz
+    // with:
+    //
+    // abcCONTENT<%foo%>CONTENTxyz
+    //
+    // for now, I'll cap the max loop iterations to prevent an infinite loop
+    // TODO - figure out why this is happening and fix the real problem
+    loopCount = loopCount + 1;
+    if(loopCount > 9){
+      break;
+    }
   }
   return tpl;
 }
