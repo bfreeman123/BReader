@@ -11,10 +11,10 @@
 
     <title>{% block title %}{% endblock %}</title>
 
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link href="/static/css/base.css" rel="stylesheet">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script src="/static/js/base.js"></script>
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -45,7 +45,7 @@
         </div>
         <div class="navbar-collapse collapse">
           <form class="form" role="search" method="GET" action="/search" style="position: relative;top:8px;">
-            <div class="col-lg-4 col-lg-offset-2">
+            <div class="col-lg-4 col-lg-offset-1">
               <div class="input-group">
                 <input type="text" class="form-control" placeholder="Search" name="q">
                 <span class="input-group-btn">
@@ -55,6 +55,10 @@
             </div>
           </form>
           <ul class="nav navbar-nav navbar-right">
+            <div class="btn-group" role="group" aria-label="...">
+              <button type="button" id="b-single" class="btn btn-default navbar-btn">Single</button>
+              <button type="button" id="b-multi" class="btn btn-default navbar-btn">Multi</button>
+            </div>
             <li {% if h %}class="active"{% endif %}><a href="/">Home</a></li>
             <li {% if "/show_starred" in url %}class="active"{% endif %}><a href="/show_starred">Starred</a></li>
             <li {% if "/show_archived" in url %}class="active"{% endif %}><a href="/show_archived">Archived</a></li>

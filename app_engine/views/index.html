@@ -35,6 +35,14 @@ $(document).ready(function() {
   $("#star").bind( "click", function() {
     doStar();
   });
+
+  $("#b-single").click(function() {
+    BReader.setModeSingle();
+  });
+  $("#b-multi").click(function() {
+    BReader.setModeMulti();
+  });
+
   $(function() {
     var x = $('#p');
     x.width(x.parent().width());
@@ -62,6 +70,9 @@ function doNext(mobile){
     }
   }
   if(BReader.moveForward()){
+    if(BReader.mode == 1){
+      BReader.showResult(BReader.current_index);
+    }
     BReader.jumpToStory('#a_' + BReader.currentStoryID(), mobile);
     // only do something on nodes we haven't visited yet
     if($('#s_' + BReader.currentStoryID()).hasClass("panel-primary")){
@@ -87,6 +98,10 @@ function doNext(mobile){
 function doPrevious(mobile){
   if(typeof(mobile)==='undefined') mobile = false;
   if(BReader.moveBackward()){
+    if(BReader.mode == 1){
+      BReader.showResult(BReader.current_index);
+      $('#s_' + BReader.all_stories[BReader.current_index]).removeClass('panel-default').addClass('panel-primary');
+    }
     BReader.jumpToStory('#a_' + BReader.currentStoryID(), mobile);
   }
 }

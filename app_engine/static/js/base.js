@@ -2,7 +2,11 @@ var BReader = {};
 
 BReader.all_stories = [];
 BReader.all_feed_ids = [];
+BReader.rendered_stories = [];
 BReader.current_index = -1;
+// single = 1 (one story at a time)
+// multi = 2 (multiple stories at a time)
+BReader.mode = 2;
 
 BReader.moveForward = function(){
   if(BReader.current_index < (BReader.all_stories.length - 1)){
@@ -108,10 +112,28 @@ BReader.appendResults = function(stories){
     BReader.all_stories.push(story.key.toString());
     BReader.all_feed_ids.push(story.feed_guid);
     html = BReader.render(story);
-    $('#maintable').append(html);
+    BReader.rendered_stories.push(html);
+    if(BReader.mode == 2){
+      $('#maintable').append(html);
+    }
   }
   // force all external links to open in new tab
   $("a[href^='http']").attr('target','_blank');
+}
+
+BReader.showResult = function(index){
+  story = BReader.rendered_stories[index];
+  $('#maintable').html(story);
+}
+
+BReader.setModeSingle = function(){
+  BReader.mode = 1;
+  //location.reload();
+}
+
+BReader.setModeMulti = function(){
+  BReader.mode = 2;
+  //location.reload();
 }
 
 BReader.nothingAvailable = '<div class="jumbotron"><div class="media"><img class="img-responsive col-xs-3 media-object pull-left" src="/static/wiggum.gif"><div class="media-body"><h1>Nothing to see here!</h1><p>Move along . . .</p></div></div></div>';
