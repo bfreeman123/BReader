@@ -8,33 +8,12 @@ var bookmark = "";
 var more = false;
 
 $(document).ready(function() {
-  $.ajax({
-    {% if f %}
-    url: "/archived?f={{ f }}",
-    {% else %}
-    url: "/archived",
-    {% endif %}
-    cache: false,
-    dataType: 'json'
-  }).done(function( json ) {
-    bookmark = json.bookmark;
-    more = json.more;
-    if(json.stories.length > 0){
-      BReader.appendResults(json.stories);
-    } else {
-      $('#maintable').append(BReader.nothingAvailable);
-    }
-  });
-  $("#previous").bind( "click", function() {
-    doPrevious(true);
-  });
-  $("#next").bind( "click", function() {
-    doNext(true);
-  });
-  $(function() {
-    var x = $('#p');
-    x.width(x.parent().width());
-  });
+  {% if f %}
+  var f = "{{ f }}"
+  {% else %}
+  var f = null;
+  {% endif %}
+  BReader.bootstrap('archived', f);
 });
 
 function doNext(mobile){
@@ -58,6 +37,9 @@ function doNext(mobile){
     }
   }
   if(BReader.moveForward()){
+    if(BReader.mode == 1){
+      BReader.showResult(BReader.current_index);
+    }
     BReader.jumpToStory('#a_' + BReader.currentStoryID(), mobile);
     $('.panel-info').removeClass('panel-info').removeClass('panel-default').addClass('panel-default')
     $('#s_' + BReader.currentStoryID()).removeClass('panel-default').addClass('panel-info');
@@ -67,6 +49,9 @@ function doNext(mobile){
 function doPrevious(mobile){
   if(typeof(mobile)==='undefined') mobile = false;
   if(BReader.moveBackward()){
+    if(BReader.mode == 1){
+      BReader.showResult(BReader.current_index);
+    }
     BReader.jumpToStory('#a_' + BReader.currentStoryID(), mobile);
     $('.panel-info').removeClass('panel-info').removeClass('panel-default').addClass('panel-default')
     $('#s_' + BReader.currentStoryID()).removeClass('panel-default').addClass('panel-info');

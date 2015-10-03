@@ -8,45 +8,12 @@ var bookmark = "";
 var more = false;
 
 $(document).ready(function() {
-  $.ajax({
-    {% if f %}
-    url: "/next?f={{ f }}",
-    {% else %}
-    url: "/next",
-    {% endif %}
-    cache: false,
-    dataType: 'json'
-  }).done(function( json ) {
-    bookmark = json.bookmark;
-    more = json.more;
-    if(json.stories.length > 0){
-      BReader.appendResults(json.stories);
-    } else {
-      $('#maintable').append(BReader.nothingAvailable);
-    }
-  });
-
-  $("#previous").bind( "click", function() {
-    doPrevious(true);
-  });
-  $("#next").bind( "click", function() {
-    doNext(true);
-  });
-  $("#star").bind( "click", function() {
-    doStar();
-  });
-
-  $("#b-single").click(function() {
-    BReader.setModeSingle();
-  });
-  $("#b-multi").click(function() {
-    BReader.setModeMulti();
-  });
-
-  $(function() {
-    var x = $('#p');
-    x.width(x.parent().width());
-  });
+  {% if f %}
+  var f = "{{ f }}"
+  {% else %}
+  var f = null;
+  {% endif %}
+  BReader.bootstrap('next', f);
 });
 
 function doNext(mobile){

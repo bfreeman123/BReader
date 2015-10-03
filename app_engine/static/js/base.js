@@ -6,6 +6,50 @@ BReader.current_index = -1;
 // multi = 2 (multiple stories at a time)
 BReader.mode = 2;
 
+BReader.bootstrap = function(page, f){
+  var l = "";
+  if(f){
+    l = "/" + page + "?f=" + f;
+  } else {
+    l = "/" + page;
+  }
+  $.ajax({
+    url: l,
+    cache: false,
+    dataType: 'json'
+  }).done(function( json ) {
+    bookmark = json.bookmark;
+    more = json.more;
+    if(json.stories.length > 0){
+      BReader.appendResults(json.stories);
+    } else {
+      $('#maintable').append(BReader.nothingAvailable);
+    }
+  });
+
+  $("#previous").bind( "click", function() {
+    doPrevious(true);
+  });
+  $("#next").bind( "click", function() {
+    doNext(true);
+  });
+  $("#star").bind( "click", function() {
+    doStar();
+  });
+
+  $("#b-single").click(function() {
+    BReader.setModeSingle();
+  });
+  $("#b-multi").click(function() {
+    BReader.setModeMulti();
+  });
+
+  $(function() {
+    var x = $('#p');
+    x.width(x.parent().width());
+  });
+}
+
 BReader.moveForward = function(){
   if(BReader.current_index < (BReader.all_stories.length - 1)){
     BReader.current_index += 1;
