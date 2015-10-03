@@ -1,8 +1,6 @@
 var BReader = {};
 
 BReader.all_stories = [];
-BReader.all_feed_ids = [];
-BReader.rendered_stories = [];
 BReader.current_index = -1;
 // single = 1 (one story at a time)
 // multi = 2 (multiple stories at a time)
@@ -26,15 +24,19 @@ BReader.moveBackward = function(){
   }
 }
 
+BReader.currentStory = function(){
+  return BReader.all_stories[BReader.current_index];
+}
+
 BReader.currentStoryID = function(){
   if(BReader.current_index > -1){
-    return BReader.all_stories[BReader.current_index];
+    return BReader.currentStory().key.toString();
   }
 }
 
 BReader.currentFeedID = function(){
   if(BReader.current_index > -1){
-    return BReader.all_feed_ids[BReader.current_index];
+    return BReader.currentStory().feed_guid;
   }
 }
 
@@ -109,21 +111,24 @@ BReader.render = function(story){
 BReader.appendResults = function(stories){
   for (var i=0; i<stories.length; i++){
     story = stories[i];
-    BReader.all_stories.push(story.key.toString());
-    BReader.all_feed_ids.push(story.feed_guid);
-    html = BReader.render(story);
-    BReader.rendered_stories.push(html);
+    story.read = false;
+    BReader.all_stories.push(story);
     if(BReader.mode == 2){
-      $('#maintable').append(html);
+      $('#maintable').append(BReader.render(story));
     }
   }
+  BReader.updateLinks();
+}
+
+BReader.updateLinks = function(){
   // force all external links to open in new tab
   $("a[href^='http']").attr('target','_blank');
 }
 
 BReader.showResult = function(index){
-  story = BReader.rendered_stories[index];
-  $('#maintable').html(story);
+  story = BReader.all_stories[index];
+  $('#maintable').html(BReader.render(story));
+  BReader.updateLinks();
 }
 
 BReader.setModeSingle = function(){
