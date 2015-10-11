@@ -13,7 +13,7 @@ $(document).ready(function() {
   {% else %}
   var f = null;
   {% endif %}
-  BReader.bootstrap('archived', f);
+  BReader.bootstrap('archived', f, {{ m }});
 });
 
 function doNext(mobile){

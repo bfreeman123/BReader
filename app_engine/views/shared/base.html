@@ -55,10 +55,12 @@
             </div>
           </form>
           <ul class="nav navbar-nav navbar-right">
+            {% if m %}
             <div class="btn-group" role="group" aria-label="...">
-              <button type="button" id="b-single" class="btn btn-default navbar-btn">Single</button>
-              <button type="button" id="b-multi" class="btn btn-default navbar-btn">Multi</button>
+              <button type="button" id="b-single" class="btn btn-default navbar-btn {% if m==1 %}active{% endif %}"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+              <button type="button" id="b-multi" class="btn btn-default navbar-btn {% if m==2 %}active{% endif %}"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></button>
             </div>
+            {% endif %}
             <li {% if h %}class="active"{% endif %}><a href="/">Home</a></li>
             <li {% if "/show_starred" in url %}class="active"{% endif %}><a href="/show_starred">Starred</a></li>
             <li {% if "/show_archived" in url %}class="active"{% endif %}><a href="/show_archived">Archived</a></li>

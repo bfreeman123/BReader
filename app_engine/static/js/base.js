@@ -6,7 +6,8 @@ BReader.current_index = -1;
 // multi = 2 (multiple stories at a time)
 BReader.mode = 2;
 
-BReader.bootstrap = function(page, f){
+BReader.bootstrap = function(page, f, m){
+  BReader.mode = m;
   var l = "";
   if(f){
     l = "/" + page + "?f=" + f;
@@ -22,6 +23,9 @@ BReader.bootstrap = function(page, f){
     more = json.more;
     if(json.stories.length > 0){
       BReader.appendResults(json.stories);
+      if(BReader.mode == 1){
+        BReader.showResult(0)
+      }
     } else {
       $('#maintable').append(BReader.nothingAvailable);
     }
@@ -175,14 +179,24 @@ BReader.showResult = function(index){
   BReader.updateLinks();
 }
 
+BReader.setMode = function(mode){
+  $.ajax({
+    url: "/setmode?m="+mode,
+    cache: false,
+    dataType: 'json'
+  }).done(function( json ) {
+    location.reload();
+  });
+}
+
 BReader.setModeSingle = function(){
   BReader.mode = 1;
-  //location.reload();
+  BReader.setMode(1);
 }
 
 BReader.setModeMulti = function(){
   BReader.mode = 2;
-  //location.reload();
+  BReader.setMode(2);
 }
 
 BReader.nothingAvailable = '<div class="jumbotron"><div class="media"><img class="img-responsive col-xs-3 media-object pull-left" src="/static/wiggum.gif"><div class="media-body"><h1>Nothing to see here!</h1><p>Move along . . .</p></div></div></div>';

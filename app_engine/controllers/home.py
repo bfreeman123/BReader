@@ -20,7 +20,7 @@ class MainPage(BaseRequest):
     if u2 == None:
       u2 = u
     f = self.request.get('f')
-    self.render('index.html', {'unread_count':u2.unread_count, 'f':f, 'h':True})
+    self.render('index.html', {'unread_count':u2.unread_count, 'f':f, 'h':True, 'm':u.read_mode})
 
 class FeedPage(BaseRequest):
   def get(self):
@@ -236,7 +236,7 @@ class ArchivedPage(BaseRequest):
   def get(self):
     u = User.query().get()
     f = self.request.get('f')
-    self.render('archived.html', {'unread_count':u.unread_count, 'f':f})
+    self.render('archived.html', {'unread_count':u.unread_count, 'f':f, 'm':u.read_mode})
 
 class ArchivedHandler(BaseRequest):
   def get(self):
@@ -261,7 +261,12 @@ class SearchPage(BaseRequest):
     except:
       results = []
     self.render('search.html', {'unread_count':u.unread_count, 'results':results, 'q':q})
-      
+
+class SetMode(BaseRequest):
+  def get(self):
+    u = User.query().get()
+    u.set_mode(int(self.request.get('m')))
+    self.response.write(json.dumps({'status': 'OK'}))
     
 routes = [('/', MainPage),
           ('/feeds', FeedPage),
@@ -286,6 +291,7 @@ routes = [('/', MainPage),
           ('/sync_worker', SyncWorker),
           ('/show_archived', ArchivedPage),
           ('/archived', ArchivedHandler),
-          ('/search', SearchPage)]
+          ('/search', SearchPage),
+          ('/setmode', SetMode)]
 
 app = BaseRequest.app_factory(routes)

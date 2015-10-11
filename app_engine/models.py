@@ -24,6 +24,7 @@ class User(Base):
   user = ndb.UserProperty()
   read_count = ndb.IntegerProperty(indexed=False)
   unread_count = ndb.IntegerProperty(indexed=False)
+  read_mode = ndb.IntegerProperty(indexed=False, default=2)
 
   @staticmethod
   def reset_unread():
@@ -36,6 +37,11 @@ class User(Base):
     user.put()
     memcache.set('user', user)
     return user
+
+  def set_mode(self, mode):
+    self.read_mode = mode
+    self.put()
+    memcache.set('user', self)
 
 class Feed(Base):
   name = ndb.StringProperty(required=True)
