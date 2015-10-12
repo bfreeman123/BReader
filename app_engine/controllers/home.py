@@ -182,7 +182,7 @@ class Account(BaseRequest):
 class StarredPage(BaseRequest):
   def get(self):
     u = User.query().get()
-    self.render('starred.html', {'unread_count':u.unread_count})
+    self.render('starred.html', {'unread_count':u.unread_count, 'm':u.read_mode})
 
 class StarredHandler(BaseRequest):
   def get(self):

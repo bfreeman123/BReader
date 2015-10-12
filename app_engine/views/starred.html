@@ -8,7 +8,7 @@ var bookmark = "";
 var more = false;
 
 $(document).ready(function() {
-  BReader.bootstrap('starred', null);
+  BReader.bootstrap('starred', null, {{ m }});
 });
 
 function setHighlight(){
@@ -33,6 +33,9 @@ function doNext(mobile){
     }
   }
   if(BReader.moveForward()){
+    if(BReader.mode == 1){
+      BReader.showResult(BReader.current_index);
+    }
     BReader.jumpToStory('#a_' + BReader.currentStoryID(), mobile);
     setHighlight();
   }
@@ -41,6 +44,10 @@ function doNext(mobile){
 function doPrevious(mobile){
   if(typeof(mobile)==='undefined') mobile = false;
   if(BReader.moveBackward()){
+    if(BReader.mode == 1){
+      BReader.showResult(BReader.current_index);
+      $('#s_' + BReader.currentStoryID()).removeClass('panel-default').addClass('panel-primary');
+    }
     BReader.jumpToStory('#a_' + BReader.currentStoryID(), mobile);
     setHighlight();
   }
