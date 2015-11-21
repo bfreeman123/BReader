@@ -5,6 +5,8 @@ api_version: 1
 threadsafe: true
 
 handlers:
+- url: /_ah/spi/.*
+  script: breader_api.APPLICATION
 - url: /favicon.ico
   static_files: static/favicon.ico
   upload: static/favicon.ico
@@ -20,3 +22,7 @@ handlers:
 libraries:
 - name: jinja2
   version: latest
+- name: pycrypto
+  version: latest
+- name: endpoints
+  version: 1.0
