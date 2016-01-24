@@ -9,6 +9,8 @@ from google.appengine.api import search
 import sys
 import traceback
 import re
+import bleach
+from xml.sax.saxutils import unescape
 
 class MainPage(BaseRequest):
   def get(self):
@@ -50,6 +52,19 @@ class FeedsWorker(webapp2.RequestHandler):
       taskqueue.add(url='/feed_worker', params={'key':feed.key.urlsafe()})
 
 class FeedWorker(webapp2.RequestHandler):
+  def is_escaped(self, text):
+    return '&lt;' in text
+
+  def un_escape(self, text):
+    html_unescape_table = {
+      '&apos;': "'",
+      '&amp;': '&',
+      '&quot;': '"',
+      '&lt;': '<',
+      '&gt;': '>'
+    }
+    return unescape(text, html_unescape_table)
+
   @ndb.transactional
   def safe_insert(self, entry, feed, story_date):
     if not Story.query(ancestor=feed.key).filter(Story.guid == entry.id).get():
@@ -57,18 +72,26 @@ class FeedWorker(webapp2.RequestHandler):
       story.title = entry.title
       story.link = entry.link
       x = entry.description
+
+      # un-escape
+      if self.is_escaped(x):
+        x = self.un_escape(x)
+
+      # sanatize html
+      x = bleach.clean(x, strip=True)
+
       try:
         if x != entry.content[0].value:
           x = x + entry.content[0].value
       except:
         x = x
-      
+
       # add any links that are missing
       r = re.compile(r"(?!href) (http://[^ ]+)")
       x = r.sub(r'<a href="\1">\1</a>', x)
       r = re.compile(r"(?!href) (https://[^ ]+)")
       x = r.sub(r'<a href="\1">\1</a>', x)
-      
+
       # get mp3
       if entry.links:
         for link in entry.links:
@@ -141,7 +164,7 @@ class ReadHandler(BaseRequest):
   def get(self):
     key = self.request.get('key')
     Story.mark_read(key, User.query().get())
-    
+
     self.response.write(json.dumps({'status': 'OK', 'key': key}))
 
 class FeedImport(BaseRequest):
@@ -195,14 +218,14 @@ class MarkStar(BaseRequest):
   def get(self):
     key = self.request.get('key')
     Story.mark_starred(key)
-    
+
     self.response.write(json.dumps({'status': 'OK', 'key': key}))
 
 class UnMarkStar(BaseRequest):
   def get(self):
     key = self.request.get('key')
     Story.unmark_starred(key)
-    
+
     self.response.write(json.dumps({'status': 'OK', 'key': key}))
 
 class Sync(BaseRequest):
@@ -221,9 +244,9 @@ class SyncWorker(BaseRequest):
         total += 1
       feed.unread_count2 = c
       feed.put()
-    
+
     User.reset_unread()
-    
+
     # index all stories
     index = search.Index(name='story_index')
     for story in Story.query().order(-Story.created_at).iter():
@@ -267,7 +290,7 @@ class SetMode(BaseRequest):
     u = User.query().get()
     u.set_mode(int(self.request.get('m')))
     self.response.write(json.dumps({'status': 'OK'}))
-    
+
 routes = [('/', MainPage),
           ('/feeds', FeedPage),
           ('/update_feeds', FeedHandler),
