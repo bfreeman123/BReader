@@ -38,6 +38,7 @@ ALLOWED_ATTRIBUTES = {
     'a': ['href', 'title'],
     'abbr': ['title'],
     'acronym': ['title'],
+    'img': ['src', 'alt', 'title'],
 }
 
 ALLOWED_STYLES = []
